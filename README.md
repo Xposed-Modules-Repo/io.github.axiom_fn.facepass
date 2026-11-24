@@ -12,6 +12,7 @@ The ColorOS face sensor reports strength `4095`, which belongs to no Android cla
 - **Per-request judgment**:
   - Requests bound to a Keystore key (with a `CryptoObject`) use fingerprint only. Face is still a weak biometric to the system and cannot unlock such keys.
   - If the same app asks again within a few seconds after face succeeded (common with time-bound keys), that request uses fingerprint only. Turning the screen off clears this record.
+- **Older apps**: an app that still verifies through the legacy fingerprint API is carried into the same system prompt, so it gains face alongside fingerprint without being touched itself; if face is not recognised, fingerprint is still there. An app clone borrows the foreground user's face.
 - **Prompt panel**: the medium-size ColorOS panel, the same one fingerprint uses. Face and fingerprint start together, and the prompt continues by itself once face succeeds.
 - **Early face success**: if your face is already in front of the camera, the result is held until the prompt has finished appearing, so the system does not take it as a cancellation.
 - **Fluid Cloud hint**: a hint is shown in Fluid Cloud while face recognition runs.
@@ -23,7 +24,7 @@ FacePass injects into no app. Its scope is fixed to System Framework and System 
 
 | Where | What |
 |---|---|
-| system_server | Judges each request (face / fingerprint only / stock) and lets face pass the strength check only for requests judged face; handles the camera held by the lock screen and early face success; posts the Fluid Cloud hint |
+| system_server | Judges each request (face / fingerprint only / stock) and lets face pass the strength check only for requests judged face; carries a legacy fingerprint request into the prompt; handles the camera held by the lock screen and early face success; posts the Fluid Cloud hint |
 | SystemUI | Gives whitelisted apps the medium-size panel, removes the needless confirmation, starts fingerprint together with face |
 
 Face images and matching stay in the hardware and the secure environment (TEE). FacePass sees only success or failure.
@@ -64,6 +65,7 @@ ColorOS 的人臉感應器上報的強度是 `4095`，不屬於 Android 的任�
 - **逐次判斷**：
   - 綁定 Keystore 密鑰的驗證（帶 `CryptoObject`）只用指紋。人臉在系統裡仍是弱認證，解不開這類密鑰。
   - 人臉通過後幾秒內同一應用又要求驗證（常見於限時密鑰），那一次只用指紋。關閉螢幕會清除這個紀錄。
+- **舊式呼叫**：仍透過舊版指紋介面驗證的應用，會被帶進同一個系統驗證框，因而在不動那個應用的前提下同時獲得人臉與指紋；人臉沒認出時，指紋依然可用。分身應用會借用前台空間的人臉。
 - **驗證框**：使用 ColorOS 自帶的中尺寸面板（與指紋驗證相同），人臉與指紋同時啟動，人臉通過後自動繼續。
 - **人臉過早通過**：臉已在鏡頭前時，結果會等驗證框顯示完成才交出，不會被系統當成「取消」。
 - **流體雲提示**：人臉辨識期間在流體雲顯示「正在尋找你的臉孔」。
@@ -75,7 +77,7 @@ FacePass 不注入任何應用，作用域固定為「系統框架」與「系�
 
 | 位置 | 做什麼 |
 |---|---|
-| system_server | 為每個驗證請求作出裁決（人臉／只用指紋／原生），只對裁決為人臉的請求放行人臉的強度檢查；處理鏡頭被鎖屏佔用、人臉過早通過，並發出流體雲提示 |
+| system_server | 為每個驗證請求作出裁決（人臉／只用指紋／原生），只對裁決為人臉的請求放行人臉的強度檢查；將舊式指紋請求帶進驗證框；處理鏡頭被鎖屏佔用、人臉過早通過，並發出流體雲提示 |
 | SystemUI | 讓白名單應用的驗證框使用中尺寸面板、免去多餘的確認、讓指紋與人臉同時啟動 |
 
 人臉的影像與比對都在硬體與安全環境（TEE）中完成，FacePass 只看得到「成功／失敗」。
